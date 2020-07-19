@@ -1,6 +1,11 @@
 version: '3.2'
 
 services:
+  app:
+    build:
+      context: dummy-app
+      dockerfile: Dockerfile
+  
   elasticsearch:
     build:
       context: elasticsearch/
@@ -50,6 +55,20 @@ services:
       - elk
     depends_on:
       - elasticsearch
+  
+  filebeat:
+    hostname: filebeat
+    build:
+      context: filebeat
+      args:
+        ELK_VERSION: $ELK_VERSION
+    volumes:
+      # needed to access all docker logs (read only) :
+      - "/var/lib/docker/containers:/usr/share/dockerlogs/data:ro"
+      # needed to access additional informations about containers
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    links:
+        - logstash
 
   kibana:
     build:
